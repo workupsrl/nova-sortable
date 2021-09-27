@@ -9,7 +9,7 @@ Uses Spatie's [eloquent-sortable](https://github.com/spatie/eloquent-sortable) u
 
 ## Requirements
 
-- `php: >=8.0`
+- `php: ^8.0`
 - `workup/nova: ^3.0`
 
 ## Features
