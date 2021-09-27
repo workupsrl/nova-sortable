@@ -11,6 +11,7 @@ Uses Spatie's [eloquent-sortable](https://github.com/spatie/eloquent-sortable) u
 
 - `php: ^8.0`
 - `workup/nova: ^3.0`
+- `workup/nova-translations-loader: "^3.0.0"`
 
 ## Features
 
