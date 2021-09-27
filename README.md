@@ -9,8 +9,8 @@ Uses Spatie's [eloquent-sortable](https://github.com/spatie/eloquent-sortable) u
 
 ## Requirements
 
-- `php: >=7.3`
-- `laravel/nova: ^3.0`
+- `php: >=8.0`
+- `workup/nova: ^3.0`
 
 ## Features
 
@@ -30,7 +30,7 @@ Install the package in a Laravel Nova project via Composer:
 
 ```bash
 # Install package
-composer require optimistdigital/nova-sortable
+composer require workup/nova-sortable
 ```
 
 ## Usage
