@@ -1,6 +1,6 @@
 <?php
 
-namespace OptimistDigital\NovaSortable\Traits;
+namespace Workup\NovaSortable\Traits;
 
 use Laravel\Nova\Http\Requests\LensRequest;
 use Laravel\Nova\Http\Requests\NovaRequest;

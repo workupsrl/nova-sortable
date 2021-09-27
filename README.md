@@ -78,7 +78,7 @@ When the model does not have a sortable configuration, the default eloquent-sort
 Apply `HasSortableRows` trait from this package on the Resource:
 
 ```php
-use OptimistDigital\NovaSortable\Traits\HasSortableRows;
+use Workup\NovaSortable\Traits\HasSortableRows;
 
 class MyResource extends Resource
 {
@@ -183,7 +183,7 @@ See the documentation here: [Sorting ManyToMany relationships (w/ pivot table)](
 The translation file(s) can be published by using the following publish command:
 
 ```bash
-php artisan vendor:publish --provider="OptimistDigital\NovaSortable\ToolServiceProvider" --tag="translations"
+php artisan vendor:publish --provider="Workup\NovaSortable\ToolServiceProvider" --tag="translations"
 ```
 
 You can add your translations to `resources/lang/vendor/nova-sortable/` by creating a new translations file with the locale name (ie `et.json`) and copying the JSON from the existing `en.json`.

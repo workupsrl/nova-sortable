@@ -82,7 +82,7 @@ public function artists()
 Add the `HasSortableManyToManyRows` trait to the Resource you want to sort on BelongsTo (in this example, can be either `Artist` or `Track`), but let's go for `Artist`.
 
 ```php
-use OptimistDigital\NovaSortable\Traits\HasSortableManyToManyRows;
+use Workup\NovaSortable\Traits\HasSortableManyToManyRows;
 
 class Artist extends Resource
 {
