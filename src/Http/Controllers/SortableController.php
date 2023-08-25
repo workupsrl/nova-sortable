@@ -2,8 +2,9 @@
 
 namespace Workup\NovaSortable\Http\Controllers;
 
-use Laravel\Nova\Nova;
 use Laravel\Nova\Http\Requests\NovaRequest;
+use Laravel\Nova\Nova;
+use Workup\NovaSortable\Traits\HasSortableRows;
 
 class SortableController
 {
@@ -20,8 +21,8 @@ class SortableController
         $relationshipType = $request->input('relationshipType');
 
         // Reverse the array if it is configured to order by DESC.
-        if ($request->resource()::getOrderByDirection($validationResult->sortable) === 'DESC') {
-            $resourceIds = array_reverse($resourceIds);
+        if (HasSortableRows::getOrderByDirection($validationResult->sortable) === 'DESC') {
+          $resourceIds = array_reverse($resourceIds);
         }
 
         // Relationship sorting
@@ -94,11 +95,10 @@ class SortableController
         if (empty($resourceClass)) return response()->json(['resourceName' => 'invalid'], 400);
 
         $modelClass = $resourceClass::$model;
-        $query = $modelClass::query();
         if (method_exists($modelClass, 'trashed')) {
-            $models = $resourceClass::indexQuery($request, $query)->withTrashed()->findMany($resourceIds);
+            $models = $modelClass::withTrashed()->findMany($resourceIds);
         } else {
-            $models = $resourceClass::indexQuery($request, $query)->findMany($resourceIds);
+            $models = $modelClass::findMany($resourceIds);
         }
         if ($models->count() !== sizeof($resourceIds)) return response()->json(['resourceIds' => 'invalid'], 400);
 
@@ -138,7 +138,7 @@ class SortableController
     public function moveToStart(NovaRequest $request)
     {
         $validationResult = $this->validateRequest($request);
-        $method = $request->resource()::getOrderByDirection($validationResult->sortable) !== 'DESC' ? 'moveToStart' : 'moveToEnd';
+        $method = HasSortableRows::getOrderByDirection($validationResult->sortable) !== 'DESC' ? 'moveToStart' : 'moveToEnd';
         $validationResult->model->{$method}();
         return response('', 204);
     }
@@ -146,7 +146,7 @@ class SortableController
     public function moveToEnd(NovaRequest $request)
     {
         $validationResult = $this->validateRequest($request);
-        $method = $request->resource()::getOrderByDirection($validationResult->sortable) !== 'DESC' ? 'moveToEnd' : 'moveToStart';
+        $method = HasSortableRows::getOrderByDirection($validationResult->sortable) !== 'DESC' ? 'moveToEnd' : 'moveToStart';
         $validationResult->model->{$method}();
         return response('', 204);
     }
@@ -163,7 +163,7 @@ class SortableController
             'viaResourceId' => 'present',
         ]);
 
-        return $request->resource()::getSortability($request);
+        return HasSortableRows::getSortability($request);
     }
 
     protected function fixSortOrder($sortOrder)
@@ -178,4 +178,5 @@ class SortableController
         }
         return $improvedSortedOrder;
     }
+
 }

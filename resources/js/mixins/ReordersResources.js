@@ -1,11 +1,10 @@
-import { canSortResource } from './canSortResource';
+import { canSortResource } from '../tool';
 
 export default {
   data: () => ({
     reorderLoading: false,
     fakeResources: [],
   }),
-  emits: ['updateOrder', 'moveToStart', 'moveToEnd'],
   computed: {
     canSeeReorderButtons() {
       const resource = this.resource || (this.resources && this.resources[0]);
@@ -14,11 +13,6 @@ export default {
   },
   beforeMount() {
     this.fakeResources = this.resources;
-  },
-  watch: {
-    resources(newVal, oldVal) {
-      this.fakeResources = this.resources;
-    },
   },
   methods: {
     async updateOrder(event) {
