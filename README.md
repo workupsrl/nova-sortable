@@ -1,7 +1,7 @@
 # Nova Sortable
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/optimistdigital/nova-sortable.svg?style=flat-square)](https://packagist.org/packages/optimistdigital/nova-sortable)
-[![Total Downloads](https://img.shields.io/packagist/dt/optimistdigital/nova-sortable.svg?style=flat-square)](https://packagist.org/packages/optimistdigital/nova-sortable)
+[![Latest Version on Packagist](https://img.shields.io/packagist/v/outl1ne/nova-sortable.svg?style=flat-square)](https://packagist.org/packages/outl1ne/nova-sortable)
+[![Total Downloads](https://img.shields.io/packagist/dt/outl1ne/nova-sortable.svg?style=flat-square)](https://packagist.org/packages/outl1ne/nova-sortable)
 
 This [Laravel Nova](https://nova.laravel.com) package allows you to reorder models in a Nova resource's index view using drag & drop.
 
@@ -9,9 +9,8 @@ Uses Spatie's [eloquent-sortable](https://github.com/spatie/eloquent-sortable) u
 
 ## Requirements
 
-- `php: ^8.0`
-- `workup/nova: ^3.0`
-- `workup/nova-translations-loader: "^3.0.0"`
+- `php: >=8.0`
+- `laravel/nova: ^4.24.0`
 
 ## Features
 
@@ -104,6 +103,23 @@ public static function canSort(NovaRequest $request, $resource)
 }
 ```
 
+NB! This requires you to disable caching (see below).
+
+### Disabling caching
+
+If you want to disable caching due to using `canSort` or running tests, you can set `sortableCacheEnabled` to false on the resource that has the `HasSortableRows` trait. See the example below:
+
+```php
+class Artist extends Resource
+{
+    use HasSortableRows;
+
+    public static $sortableCacheEnabled = false;
+}
+```
+
+Or if you want to temporarily disable sortability cache (for tests), you can call `Resource::disableSortabilityCache()` on the resource.
+
 ## Custom sortable options
 
 ### Nova sorting order
@@ -187,6 +203,25 @@ php artisan vendor:publish --provider="Workup\NovaSortable\ToolServiceProvider" 
 ```
 
 You can add your translations to `resources/lang/vendor/nova-sortable/` by creating a new translations file with the locale name (ie `et.json`) and copying the JSON from the existing `en.json`.
+
+## Other usecases
+
+### Using indexQuery
+
+This package overwrites the `indexQuery` of the Resource and if you still want to use it, you can do it as follows:
+
+```php
+use HasSortableRows {
+    indexQuery as indexSortableQuery;
+}
+
+public static function indexQuery(NovaRequest $request, $query)
+{
+  // Do whatever with the query
+  // ie $query->withCount(['children', 'descendants', 'modules']);
+  return parent::indexQuery($request, static::indexSortableQuery($request, $query));
+}
+```
 
 ## Credits
 

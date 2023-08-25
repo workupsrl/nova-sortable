@@ -5,15 +5,22 @@
     "laravel",
     "nova",
     "eloquent-sortable",
-    "optimistdigital"
+    "optimistdigital",
+    "outl1ne"
   ],
   "license": "MIT",
   "require": {
-    "php": "^8.0",
+    "php": ">=8.0",
     "spatie/eloquent-sortable": "^3.10.0|^4.0",
-    "workup/nova": "^3.0",
-    "workup/nova-translations-loader": "^3.0.0"
+    "laravel/nova": "^4.24.0",
+    "outl1ne/nova-translations-loader": "^5.0"
   },
+  "repositories": [
+    {
+      "type": "composer",
+      "url": "https://nova.laravel.com"
+    }
+  ],
   "autoload": {
     "psr-4": {
       "Workup\\NovaSortable\\": "src/"

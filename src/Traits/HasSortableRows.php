@@ -2,12 +2,15 @@
 
 namespace Workup\NovaSortable\Traits;
 
+use Spatie\EloquentSortable\SortableTrait;
 use Laravel\Nova\Http\Requests\LensRequest;
 use Laravel\Nova\Http\Requests\NovaRequest;
-use Spatie\EloquentSortable\SortableTrait;
 
 trait HasSortableRows
 {
+    protected static $_sortabilityCacheEnabled = true;
+    protected static $sortabilityCache = [];
+
     public static function canSort(NovaRequest $request, $resource)
     {
         return true;
@@ -15,6 +18,10 @@ trait HasSortableRows
 
     public static function getSortability(NovaRequest $request, $resource = null)
     {
+        if (static::sortableCacheEnabled() && !empty(static::$sortabilityCache[static::class])) {
+            return static::$sortabilityCache[static::class];
+        }
+
         $model = null;
 
         try {
@@ -29,7 +36,7 @@ trait HasSortableRows
 
         $model = $resource->resource ?? $resource ?? null;
         if (!$model || !self::canSort($request, $model)) {
-            return (object)['canSort' => false];
+            return (static::$sortabilityCache[static::class] = (object)['canSort' => false]);
         }
 
         $sortable = self::getSortabilityConfiguration($model);
@@ -50,7 +57,7 @@ trait HasSortableRows
             }
 
             if (!$model || !self::canSort($request, $model)) {
-                return (object)['canSort' => false];
+                return (static::$sortabilityCache[static::class] = (object)['canSort' => false]);
             }
         }
 
@@ -75,12 +82,12 @@ trait HasSortableRows
             }
         }
 
-        return (object) [
+        return (static::$sortabilityCache[static::class] = (object)[
             'model' => $model,
             'sortable' => $sortable,
             'sortOnBelongsTo' => $sortOnBelongsTo,
             'sortOnHasMany' => $sortOnHasMany,
-        ];
+        ]);
     }
 
     public function serializeForIndex(NovaRequest $request, $fields = null)
@@ -126,7 +133,8 @@ trait HasSortableRows
                 if (empty($request->get('orderBy')) && $shouldSort) {
                     $query->getQuery()->orders = [];
                     $direction = static::getOrderByDirection($sortability->sortable);
-                    return $query->orderBy($sortability->model->determineOrderColumnName(), $direction);
+                    $queryColumn = "{$sortability->model->getTable()}.{$sortability->model->determineOrderColumnName()}";
+                    return $query->orderBy($queryColumn, $direction);
                 }
             }
         }
@@ -155,9 +163,9 @@ trait HasSortableRows
         return array_merge($defaultConfiguration, $model->sortable);
     }
 
-  /**
-   * Get the orderBy direction.
-   */
+    /**
+     * Get the orderBy direction.
+     */
     public static function getOrderByDirection($config)
     {
         $order = 'ASC';
@@ -165,5 +173,22 @@ trait HasSortableRows
             $order = strtoupper($config['nova_order_by']);
         }
         return $order;
+    }
+
+
+    // ------------------------------
+    // -- Cache helpers
+    // ------------------------------
+
+    public static function sortableCacheEnabled()
+    {
+        if (!static::$_sortabilityCacheEnabled) return false;
+        if (isset(static::$sortableCacheEnabled)) return static::$sortableCacheEnabled;
+        return true;
+    }
+
+    public static function disableSortabilityCache()
+    {
+        static::$_sortabilityCacheEnabled = false;
     }
 }

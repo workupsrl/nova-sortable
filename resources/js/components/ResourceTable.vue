@@ -1,72 +1,72 @@
 <template>
-  <table
-    v-if="resources.length > 0"
-    class="table w-full"
-    :class="[`table-${resourceInformation.tableStyle}`, resourceInformation.showColumnBorders ? 'table-grid' : '']"
-    cellpadding="0"
-    cellspacing="0"
-    data-testid="resource-table"
-  >
-    <thead>
-      <tr>
-        <!-- Select Checkbox -->
-        <th class="w-16" v-if="shouldShowCheckboxes || canSeeReorderButtons">&nbsp;</th>
-
-        <!-- Field Names -->
-        <th v-for="field in fields" :class="`text-${field.textAlign}`">
-          <sortable-icon
-            @sort="requestOrderByChange(field)"
-            @reset="resetOrderBy(field)"
-            :resource-name="resourceName"
-            :uri-key="field.sortableUriKey"
-            v-if="field.sortable"
-          >
-            {{ field.indexName }}
-          </sortable-icon>
-
-          <span v-else>{{ field.indexName }}</span>
-        </th>
-
-        <!-- Actions, View, Edit, Delete -->
-        <th>&nbsp;</th>
-      </tr>
-    </thead>
-    <draggable v-model="fakeResources" tag="tbody" handle=".handle" @update="updateOrder">
-      <tr
-        v-for="(resource, index) in fakeResources"
-        @actionExecuted="$emit('actionExecuted')"
-        :testId="`${resourceName}-items-${index}`"
-        :key="resource.id.value"
-        :delete-resource="deleteResource"
-        :restore-resource="restoreResource"
-        is="resource-table-row"
-        :resource="resource"
+  <div class="overflow-hidden overflow-x-auto relative">
+    <table
+      v-if="resources.length > 0"
+      class="w-full divide-y divide-gray-100 dark:divide-gray-700"
+      data-testid="resource-table"
+    >
+      <ResourceTableHeader
         :resource-name="resourceName"
-        :relationship-type="relationshipType"
-        :via-relationship="viaRelationship"
-        :via-resource="viaResource"
-        :via-resource-id="viaResourceId"
-        :via-many-to-many="viaManyToMany"
-        :checked="selectedResources.indexOf(resource) > -1"
-        :actions-are-available="actionsAreAvailable"
-        :actions-endpoint="actionsEndpoint"
+        :fields="fields"
+        :should-show-column-borders="shouldShowColumnBorders"
         :should-show-checkboxes="shouldShowCheckboxes"
-        :update-selection-status="updateSelectionStatus"
-        @moveToStart="moveToStart(resource)"
-        @moveToEnd="moveToEnd(resource)"
+        :sortable="sortable"
+        @order="requestOrderByChange"
+        @reset-order-by="resetOrderBy"
+        :resource="{ ...(fakeResources[0] || {}) }"
       />
-    </draggable>
-  </table>
+      <draggable
+        tag="tbody"
+        v-model="fakeResources"
+        handle=".handle"
+        draggable="tr"
+        @update="updateOrder"
+        class="o1-divide-y o1-divide-gray-100 dark:o1-divide-gray-700"
+      >
+        <ResourceTableRow
+          v-for="(resource, index) in fakeResources"
+          @actionExecuted="$emit('actionExecuted')"
+          :testId="`${resourceName}-items-${index}`"
+          :key="`${resourceName}-items-${index}`"
+          :delete-resource="deleteResource"
+          :restore-resource="restoreResource"
+          :resource="resource"
+          :resource-name="resourceName"
+          :relationship-type="relationshipType"
+          :via-relationship="viaRelationship"
+          :via-resource="viaResource"
+          :via-resource-id="viaResourceId"
+          :via-many-to-many="viaManyToMany"
+          :checked="selectedResources.indexOf(resource) > -1"
+          :actions-are-available="actionsAreAvailable"
+          :actions-endpoint="actionsEndpoint"
+          :should-show-checkboxes="shouldShowCheckboxes"
+          :should-show-column-borders="shouldShowColumnBorders"
+          :table-style="tableStyle"
+          :update-selection-status="updateSelectionStatus"
+          :click-action="clickAction"
+          @moveToStart="moveToStart(resource)"
+          @moveToEnd="moveToEnd(resource)"
+        />
+      </draggable>
+    </table>
+  </div>
 </template>
 
 <script>
-import { InteractsWithResourceInformation } from 'laravel-nova';
-import Draggable from 'vuedraggable';
-import ReordersResources from '../mixins/ReordersResources';
+import { InteractsWithResourceInformation } from 'laravel-nova-mixins'
+import { VueDraggableNext } from 'vue-draggable-next'
+import ReordersResources from '../mixins/ReordersResources'
 
 export default {
+  emits: ['actionExecuted', 'delete', 'restore', 'order', 'reset-order-by'],
+
   mixins: [InteractsWithResourceInformation, ReordersResources],
-  components: { Draggable },
+
+  components: {
+    draggable: VueDraggableNext,
+  },
+
   props: {
     authorizedToRelate: {
       type: Boolean,
@@ -112,6 +112,10 @@ export default {
     actionsEndpoint: {
       default: null,
     },
+    sortable: {
+      type: Boolean,
+      default: false,
+    },
   },
 
   data: () => ({
@@ -125,28 +129,28 @@ export default {
      * Delete the given resource.
      */
     deleteResource(resource) {
-      this.$emit('delete', [resource]);
+      this.$emit('delete', [resource])
     },
 
     /**
      * Restore the given resource.
      */
     restoreResource(resource) {
-      this.$emit('restore', [resource]);
+      this.$emit('restore', [resource])
     },
 
     /**
      * Broadcast that the ordering should be updated.
      */
     requestOrderByChange(field) {
-      this.$emit('order', field);
+      this.$emit('order', field)
     },
 
     /**
      * Broadcast that the ordering should be reset.
      */
     resetOrderBy(field) {
-      this.$emit('reset-order-by', field);
+      this.$emit('reset-order-by', field)
     },
   },
 
@@ -156,7 +160,7 @@ export default {
      */
     fields() {
       if (this.resources) {
-        return this.resources[0].fields;
+        return this.resources[0].fields
       }
     },
 
@@ -164,17 +168,37 @@ export default {
      * Determine if the current resource listing is via a many-to-many relationship.
      */
     viaManyToMany() {
-      return this.relationshipType == 'belongsToMany' || this.relationshipType == 'morphToMany';
+      return (
+        this.relationshipType == 'belongsToMany' ||
+        this.relationshipType == 'morphToMany'
+      )
     },
 
     /**
      * Determine if the current resource listing is via a has-one relationship.
      */
     viaHasOne() {
-      return this.relationshipType == 'hasOne' || this.relationshipType == 'morphOne';
+      return (
+        this.relationshipType == 'hasOne' || this.relationshipType == 'morphOne'
+      )
+    },
+
+    /**
+     * Determine if the resource table should show column borders.
+     */
+    shouldShowColumnBorders() {
+      return this.resourceInformation.showColumnBorders
+    },
+
+    tableStyle() {
+      return this.resourceInformation.tableStyle
+    },
+
+    clickAction() {
+      return this.resourceInformation.clickAction
     },
   },
-};
+}
 </script>
 
 <style>
