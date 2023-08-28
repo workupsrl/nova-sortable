@@ -4,16 +4,14 @@
   "keywords": [
     "laravel",
     "nova",
-    "eloquent-sortable",
-    "optimistdigital",
-    "outl1ne"
+    "eloquent-sortable"
   ],
   "license": "MIT",
   "require": {
     "php": ">=8.0",
-    "spatie/eloquent-sortable": "^3.10.0|^4.0",
     "laravel/nova": "^4.24.0",
-    "outl1ne/nova-translations-loader": "^5.0"
+    "spatie/eloquent-sortable": "^3.10.0|^4.0",
+    "workup/nova-translations-loader": "^5.0"
   },
   "repositories": [
     {
